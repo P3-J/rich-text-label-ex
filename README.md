@@ -41,6 +41,11 @@ You can use external images in BBCode tags!
 [img]relative_path.png[/img]
 ```
 
+You can control the size of the texture in pixels
+```
+[img size="55"]user://user_path.png[/img]
+```
+
 ## Limitations
 If you turn on bbcode_enabled in editor, turn on bbcode_enabled_deferred instead.  
 But you don't need to use bbcode_enabled_deferred in your script.
