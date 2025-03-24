@@ -52,7 +52,7 @@ func _ready() -> void:
 ## var texture = RichTextLabelEx.load_texture_from_file("external_image.png")
 ## $Sprite2D.texture = load("external_image.png")
 ## [/codeblock]
-static func load_texture_from_file(path: String) -> Texture2D:
+static func load_texture_from_file(path: String, size: String) -> Texture2D:
 	if path.begins_with("res://"):
 		return load(path)
 
@@ -62,7 +62,10 @@ static func load_texture_from_file(path: String) -> Texture2D:
 		if texture != null:
 			if path.is_relative_path():
 				path = "res://" + path
-			texture.take_over_path(path)
+			if size.is_valid_int():
+				var size_px = size.to_int()
+				texture.set_size_override(Vector2i(size_px, size_px))
+			texture.take_over_path(path)		
 			return texture
 
 	return null
@@ -73,14 +76,14 @@ func _set_texture_caches(new_text: String) -> void:
 	var new_paths = []
 
 	var re = RegEx.new()
-	re.compile("\\[img.*\\](?P<path>.*)\\[\\/img\\]")
+	re.compile(r'\[img(?:\s+size="(?P<size>\d+)")?\](?P<path>.*?)\[/img\]')
 
 	var re_matches = re.search_all(new_text)
 	for re_match in re_matches:
 		var path = re_match.get_string("path")
+		var size = re_match.get_string("size")
 		if not path.begins_with("res://"):
-			new_paths.append(path)
-
+			new_paths.append([path, size])
 	# Remove unused caches.
 	var old_paths = _texture_caches.keys()
 	for old_path in old_paths:
@@ -89,5 +92,5 @@ func _set_texture_caches(new_text: String) -> void:
 
 	# Add new caches.
 	for new_path in new_paths:
-		if new_path not in old_paths:
-			_texture_caches[new_path] = RichTextLabelEx.load_texture_from_file(new_path)
+		if new_path[0] not in old_paths:
+			_texture_caches[new_path] = RichTextLabelEx.load_texture_from_file(new_path[0], new_path[1])
